@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>জুবাইল লাইভ আবহাওয়া ও বৃষ্টি কেন্দ্র</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0b132b;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        .header {
+            background-color: #1c2541;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #3a506b;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+        .btn {
+            background-color: #3a506b;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background-color: #5bc0be;
+            color: #0b132b;
+            font-weight: bold;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: #1c2541;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #3a506b;
+            text-align: center;
+        }
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 15px;
+            color: #a8dadc;
+        }
+        .card p {
+            margin: 0;
+            font-size: 26px;
+            font-weight: bold;
+        }
+        .forecast-box {
+            background-color: #1c2541;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #3a506b;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #3a506b;
+        }
+        th {
+            color: #5bc0be;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #8d99ae;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>🌧️ জুবাইল আবহাওয়া ও বৃষ্টি কেন্দ্র</h1>
+            <small id="last-updated" style="color: #a8dadc;">ডেটা লোড হচ্ছে...</small>
+        </div>
+        <button class="btn" onclick="fetchWeather()">🔄 রিফ্রেশ</button>
+    </div>
+
+    <!-- বর্তমান আবহাওয়ার কার্ড -->
+    <div class="card-grid">
+        <div class="card">
+            <h3>🌡️ বর্তমান তাপমাত্রা</h3>
+            <p id="temp">--°C</p>
+        </div>
+        <div class="card">
+            <h3>🌧️ এখন বৃষ্টি</h3>
+            <p id="rain">-- মিমি</p>
+        </div>
+        <div class="card">
+            <h3>💨 বাতাসের গতি</h3>
+            <p id="wind">-- কিমি/ঘ</p>
+        </div>
+    </div>
+
+    <!-- ৭ দিনের পূর্বাভাস -->
+    <div class="forecast-box">
+        <h3 style="margin-top: 0;">📅 আগামী ৭ দিনের বৃষ্টির পূর্বাভাস</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>তারিখ</th>
+                    <th>বৃষ্টির সম্ভাবনা</th>
+                    <th>সম্ভাব্য বৃষ্টি</th>
+                    <th>সর্বোচ্চ / সর্বনিম্ন তাপমাত্রা</th>
+                </tr>
+            </thead>
+            <tbody id="forecast-table">
+                <tr><td colspan="4" style="text-align:center;">তথ্য লোড হচ্ছে...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        তথ্যসূত্র: Open-Meteo আবহাওয়া মডেল | স্থান: জুবাইল, সৌদি আরব
+    </div>
+</div>
+
+<script>
+    // জুবাইল শহরের অক্ষাংশ ও দ্রাঘিমাংশ
+    const LAT = 27.005;
+    const LON = 49.646;
+
+    async function fetchWeather() {
+        document.getElementById('last-updated').innerText = "আপডেট হচ্ছে...";
+        
+        const url = `https://open-meteo.com{LAT}&longitude=${LON}&current=temperature_2m,rain,wind_speed_10m&daily=precipitation_probability_max,rain_sum,temperature_2m_max,temperature_2m_min&timezone=Asia%2FRiyadh`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            // বর্তমান ডেটা বসানো
+            document.getElementById('temp').innerText = `${data.current.temperature_2m}°C`;
+            document.getElementById('rain').innerText = `${data.current.rain} মিমি`;
+            document.getElementById('wind').innerText = `${data.current.wind_speed_10m} কিমি/ঘ`;
+
+            // সময় আপডেট
+            const now = new Date();
+            document.getElementById('last-updated').innerText = `সর্বশেষ হালনাগাদ: ${now.toLocaleTimeString('bn-BD')}`;
+
+            // ৭ দিনের টেবিল তৈরি
+            const tableBody = document.getElementById('forecast-table');
+            tableBody.innerHTML = "";
+
+            for (let i = 0; i < data.daily.time.length; i++) {
+                const date = data.daily.time[i];
+                const prob = data.daily.precipitation_probability_max[i];
+                const rainSum = data.daily.rain_sum[i];
+                const maxTemp = data.daily.temperature_2m_max[i];
+                const minTemp = data.daily.temperature_2m_min[i];
+
+                const row = `
+                    <tr>
+                        <td>${date}</td>
+                        <td>${prob}%</td>
+                        <td>${rainSum} মিমি</td>
+                        <td>${maxTemp}° / ${minTemp}°C</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            }
+        } catch (error) {
+            document.getElementById('last-updated').innerText = "ডেটা লোড করতে সমস্যা হয়েছে! ইন্টারনেট চেক করুন।";
+            console.error(error);
+        }
+    }
+
+    // পেজ লোড হলেই ডেটা আনবে এবং প্রতি ১০ মিনিট পর পর অটো রিফ্রেশ হবে
+    fetchWeather();
+    setInterval(fetchWeather, 600000);
+</script>
+
+</body>
+</html>
